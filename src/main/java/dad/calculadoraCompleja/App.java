@@ -2,9 +2,11 @@ package dad.calculadoraCompleja;
 
 import dad.calculadoraCompleja.resources.Complejo;
 import javafx.application.Application;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.event.ActionEvent;
+import javafx.beans.binding.DoubleExpression;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
@@ -20,15 +22,14 @@ public class App extends Application {
 
 	// model
 
-	private DoubleProperty realN1Property = new SimpleDoubleProperty(0);
-	private DoubleProperty imaginarioN1Property = new SimpleDoubleProperty(0);
+	private ObjectProperty<Complejo> complejo1Property = new SimpleObjectProperty<Complejo>();
 
-	private DoubleProperty realN2Property = new SimpleDoubleProperty(0);
-	private DoubleProperty imaginarioN2Property = new SimpleDoubleProperty(0);
+	private ObjectProperty<Complejo> complejo2Property = new SimpleObjectProperty<Complejo>();
 
-	private DoubleProperty realResultadoProperty = new SimpleDoubleProperty(0);
-	private DoubleProperty imaginarioResultadoProperty = new SimpleDoubleProperty(0);
+	private ObjectProperty<Complejo> resultadoComplejo = new SimpleObjectProperty<Complejo>();
 
+	private StringProperty operadorProperty = new SimpleStringProperty();
+	
 	// view
 
 	// VBox signosBox
@@ -118,44 +119,49 @@ public class App extends Application {
 		primaryStage.setScene(scene);
 		primaryStage.show();
 
-		realN1TextField.textProperty().bindBidirectional(realN1Property, new NumberStringConverter());
-		imaginarioN1TextField.textProperty().bindBidirectional(imaginarioN1Property, new NumberStringConverter());
+		realN1TextField.textProperty().bindBidirectional(complejo1Property.get().realProperty(), new NumberStringConverter());
+		imaginarioN1TextField.textProperty().bindBidirectional(complejo1Property.get().imaginarioProperty(), new NumberStringConverter());
 
-		realN2TextField.textProperty().bindBidirectional(realN2Property, new NumberStringConverter());
-		imaginarioN2TextField.textProperty().bindBidirectional(imaginarioN2Property, new NumberStringConverter());
+		realN2TextField.textProperty().bindBidirectional(complejo2Property.get().realProperty(), new NumberStringConverter());
+		imaginarioN2TextField.textProperty().bindBidirectional(complejo2Property.get().imaginarioProperty(), new NumberStringConverter());
 
-		signoComboBox.getSelectionModel().selectedItemProperty().addListener((obv, ov, nv) -> onChangeAction(nv));
+		realResultadoTextField.textProperty().bindBidirectional(resultadoComplejo.get().realProperty(), new NumberStringConverter());
+		imaginarioResultadoTextField.textProperty().bindBidirectional(resultadoComplejo.get().imaginarioProperty(), new NumberStringConverter());
 		
-		realN1Property.addListener((obv, ov, nv) -> onChangeAction(signoComboBox.get));
-
-		realResultadoTextField.textProperty().bindBidirectional(realResultadoProperty, new NumberStringConverter());
-		imaginarioResultadoTextField.textProperty().bindBidirectional(imaginarioResultadoProperty,
-				new NumberStringConverter());
+		operadorProperty.bind(signoComboBox.getSelectionModel().selectedItemProperty());
+		
+		operadorProperty.addListener((obv, ov, nv) -> onOperadorChanged(nv));
 	}
 	
-	private ActionEvent onChangeAction(String nv) {
-		Complejo complejo = operacionSwitch(nv);
-		realResultadoProperty.set(complejo.getReal());
-		imaginarioResultadoProperty.set(complejo.getImaginario());
-	}
-	
-	private Complejo operacionSwitch(String nv) {
+	private void onOperadorChanged(String nv) {
 		switch (nv) {
 		case "+":
-			return Complejo.sumaComplejo(new Complejo(realN1Property.get(), imaginarioN1Property.get()),
-					new Complejo(realN2Property.get(), imaginarioN2Property.get()));
+			resultadoComplejo.get().realProperty().bind(complejo1Property.get().realProperty().add(complejo2Property.get().realProperty()));
+			resultadoComplejo.get().imaginarioProperty().bind(complejo1Property.get().imaginarioProperty().add(complejo2Property.get().getImaginario()));
+		break;
+		
 		case "-":
-			return Complejo.restaComplejo(new Complejo(realN1Property.get(), imaginarioN1Property.get()),
-					new Complejo(realN2Property.get(), imaginarioN2Property.get()));
+			resultadoComplejo.get().realProperty().bind(complejo1Property.get().realProperty().subtract(complejo2Property.get().realProperty()));
+			resultadoComplejo.get().imaginarioProperty().bind(complejo1Property.get().imaginarioProperty().subtract(complejo2Property.get().getImaginario()));
+		break;
+		
 		case "*":
-			return Complejo.multiplicacionComplejo(
-					new Complejo(realN1Property.get(), imaginarioN1Property.get()),
-					new Complejo(realN2Property.get(), imaginarioN2Property.get()));
+			// (a,b) * (c,d) = (ac - bd, ad + bc)
+			resultadoComplejo.get().realProperty().bind(
+				(complejo1Property.get().realProperty().multiply(complejo2Property.get().realProperty()))
+				.add(complejo1Property.get().imaginarioProperty().multiply(complejo2Property.get().imaginarioProperty()))
+			);
+			resultadoComplejo.get().imaginarioProperty().bind(
+				(complejo1Property.get().realProperty().multiply(complejo2Property.get().imaginarioProperty()))
+				.add(complejo1Property.get().imaginarioProperty().multiply(complejo2Property.get().realProperty()))
+			);
+		break;
+		
 		case "/":
-			return Complejo.divisionComplejo(new Complejo(realN1Property.get(), imaginarioN1Property.get()),
-					new Complejo(realN2Property.get(), imaginarioN2Property.get()));
-		default:
-			return new Complejo();
+			// (a,b) / (c,d) = 
+			// real = (ac + bd / c2 + d2)
+			// imaginario = (bc - ad / c2 + d2)
+		break;
 		}
 	}
 
