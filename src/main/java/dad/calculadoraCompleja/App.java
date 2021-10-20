@@ -4,6 +4,7 @@ import dad.calculadoraCompleja.resources.Complejo;
 import javafx.application.Application;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
@@ -123,15 +124,19 @@ public class App extends Application {
 		realN2TextField.textProperty().bindBidirectional(realN2Property, new NumberStringConverter());
 		imaginarioN2TextField.textProperty().bindBidirectional(imaginarioN2Property, new NumberStringConverter());
 
-		signoComboBox.getSelectionModel().selectedItemProperty().addListener((obv, ov, nv) -> {
-			Complejo complejo = operacionSwitch(nv);
-			realResultadoProperty.set(complejo.getReal());
-			imaginarioResultadoProperty.set(complejo.getImaginario());
-		});
+		signoComboBox.getSelectionModel().selectedItemProperty().addListener((obv, ov, nv) -> onChangeAction(nv));
+		
+		realN1Property.addListener((obv, ov, nv) -> onChangeAction(signoComboBox.get));
 
 		realResultadoTextField.textProperty().bindBidirectional(realResultadoProperty, new NumberStringConverter());
 		imaginarioResultadoTextField.textProperty().bindBidirectional(imaginarioResultadoProperty,
 				new NumberStringConverter());
+	}
+	
+	private ActionEvent onChangeAction(String nv) {
+		Complejo complejo = operacionSwitch(nv);
+		realResultadoProperty.set(complejo.getReal());
+		imaginarioResultadoProperty.set(complejo.getImaginario());
 	}
 	
 	private Complejo operacionSwitch(String nv) {
