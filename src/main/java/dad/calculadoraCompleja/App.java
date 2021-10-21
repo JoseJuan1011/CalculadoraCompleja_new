@@ -2,7 +2,6 @@ package dad.calculadoraCompleja;
 
 import dad.calculadoraCompleja.resources.Complejo;
 import javafx.application.Application;
-import javafx.beans.binding.DoubleExpression;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -22,11 +21,11 @@ public class App extends Application {
 
 	// model
 
-	private ObjectProperty<Complejo> complejo1Property = new SimpleObjectProperty<Complejo>();
+	private ObjectProperty<Complejo> complejo1Property = new SimpleObjectProperty<Complejo>(new Complejo());
 
-	private ObjectProperty<Complejo> complejo2Property = new SimpleObjectProperty<Complejo>();
+	private ObjectProperty<Complejo> complejo2Property = new SimpleObjectProperty<Complejo>(new Complejo());
 
-	private ObjectProperty<Complejo> resultadoComplejo = new SimpleObjectProperty<Complejo>();
+	private ObjectProperty<Complejo> resultadoComplejo = new SimpleObjectProperty<Complejo>(new Complejo());
 
 	private StringProperty operadorProperty = new SimpleStringProperty();
 	
@@ -149,7 +148,7 @@ public class App extends Application {
 			// (a,b) * (c,d) = (ac - bd, ad + bc)
 			resultadoComplejo.get().realProperty().bind(
 				(complejo1Property.get().realProperty().multiply(complejo2Property.get().realProperty()))
-				.add(complejo1Property.get().imaginarioProperty().multiply(complejo2Property.get().imaginarioProperty()))
+				.subtract(complejo1Property.get().imaginarioProperty().multiply(complejo2Property.get().imaginarioProperty()))
 			);
 			resultadoComplejo.get().imaginarioProperty().bind(
 				(complejo1Property.get().realProperty().multiply(complejo2Property.get().imaginarioProperty()))
@@ -161,6 +160,24 @@ public class App extends Application {
 			// (a,b) / (c,d) = 
 			// real = (ac + bd / c2 + d2)
 			// imaginario = (bc - ad / c2 + d2)
+			resultadoComplejo.get().realProperty().bind(
+				(
+					(complejo1Property.get().realProperty().multiply(complejo2Property.get().realProperty()))
+					.add(complejo1Property.get().imaginarioProperty().multiply(complejo2Property.get().imaginarioProperty()))
+				).divide(
+					(complejo2Property.get().realProperty().multiply(complejo2Property.get().realProperty()))
+					.add(complejo2Property.get().imaginarioProperty().multiply(complejo2Property.get().imaginarioProperty()))
+				)
+			);
+			resultadoComplejo.get().imaginarioProperty().bind(
+				(
+					(complejo1Property.get().imaginarioProperty().multiply(complejo2Property.get().realProperty()))
+					.subtract(complejo1Property.get().realProperty().multiply(complejo2Property.get().imaginarioProperty()))
+				).divide(
+					(complejo2Property.get().realProperty().multiply(complejo2Property.get().realProperty()))
+					.add(complejo2Property.get().imaginarioProperty().multiply(complejo2Property.get().imaginarioProperty()))
+				)
+			);
 		break;
 		}
 	}

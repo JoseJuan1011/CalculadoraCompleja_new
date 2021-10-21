@@ -11,3 +11,5 @@ buildNumber.properties
 .classpath
 .project
 .settings
+target/classes/dad/calculadoraCompleja/App.class
+target/classes/dad/calculadoraCompleja/Main.class

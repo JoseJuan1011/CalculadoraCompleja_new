@@ -29,7 +29,7 @@ public class Complejo {
 	}
 	
 	public static Complejo multiplicacionComplejo(Complejo n1, Complejo n2) {
-		// (a,b) * (c,d) = (ac - bd, ad - bc)
+		// (a,b) * (c,d) = (ac - bd, ad + bc)
 		return new Complejo(
 				(n1.getReal()*n2.getReal()) - (n1.getImaginario()*n2.getImaginario()),
 				(n1.getReal()*n2.getImaginario()) + (n1.getImaginario()*n2.getReal())
